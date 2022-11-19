@@ -1,0 +1,4 @@
+(library
+ (name lablgtk3_lwd)
+ (public_name lablgtk3-lwd)
+ (libraries oowd lwd lablgtk3))
