@@ -1,3 +1,3 @@
 (executables
- (names scrolledwin)
+ (names scrolledwin reactive_table)
  (libraries oowd lwd lablgtk3_lwd))

@@ -15,6 +15,17 @@ let toggle_button on attrs =
   in
   G.button (on_click :: G.set_relief relief :: attrs)
 
+let non_reactive_attach ~left ~top ?right ?bottom ?expand ?fill ?shrink
+    ?xpadding ?ypadding c =
+  Oowd.join
+    (fun c t ->
+      t#attach ~left ~top ?right ?bottom ?expand ?fill ?shrink ?xpadding
+        ?ypadding
+        (c :> GObj.widget))
+    c
+
+let non_reactive_table attrs = Oowd.elt (GPack.table ()) attrs
+
 let window () =
   let table =
     List.init 10 (fun i ->
@@ -25,8 +36,8 @@ let window () =
               Printf.sprintf "button (%d,%d,%b)\n" i j on
             in
             let btn = toggle_button on [ G.label label ] in
-            G.attach ~left:i ~top:j ~expand:`BOTH btn))
-    |> List.flatten |> G.table
+            non_reactive_attach ~left:i ~top:j ~expand:`BOTH btn))
+    |> List.flatten |> non_reactive_table
   in
 
   G.dialog

@@ -3,21 +3,17 @@ open Oowd
 let remove parent child = parent#remove child
 
 let connect f : < connect : 'a ; .. > attr =
-  Oowd.app (fun elt -> ignore (f elt#connect))
+  app (fun elt -> ignore (f elt#connect))
 
 let button attrs = elt (GButton.button ()) attrs
 let toggle_button attrs = elt (GButton.toggle_button ()) attrs
 let label v = attr (fun e -> Lwd.map ~f:e#set_label v)
-let table attrs = elt (GPack.table ()) attrs
 
-let attach ~left ~top ?right ?bottom ?expand ?fill ?shrink ?xpadding ?ypadding c
-    =
-  join
-    (fun c t ->
-      t#attach ~left ~top ?right ?bottom ?expand ?fill ?shrink ?xpadding
-        ?ypadding
-        (c :> GObj.widget))
-    c
+let table attrs c = elt (GPack.table ()) (positionned_childs ~remove c :: attrs)
+
+let attach ~left ~top c =
+  let add (t : GPack.table) c = t#attach ~left ~top c in
+  positionned_child ~add (c :> GObj.widget elt)
 
 let scrolled_window attrs = elt (GBin.scrolled_window ()) attrs
 let border_width v = attr (fun e -> Lwd.map ~f:e#set_border_width v)
