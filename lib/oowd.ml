@@ -48,18 +48,33 @@ let positionned_child ~add (ct, ce) =
   let$ () = ct in
   leaf
 
+let _states_considered = ref 0
+let _dom_updates = ref 0
+
+(** Useful to assert the efficiency of the DOM update function. The first number
+    is how much of the internal data structure needs to be looked at. *)
+let _log_stats () =
+  Printf.printf
+    "Oowd.positionne_childs: %d states considered, %d dom updates\n%!"
+    !_states_considered !_dom_updates;
+  _states_considered := 0;
+  _dom_updates := 0
+
 let positionned_childs ~remove childs parent =
   let map x = x
   and reduce left right = Concat { synced = false; left; right } in
   let reducer = ref (R.make ~map ~reduce) in
   let rec update_childs = function
     | Leaf leaf -> (
+        incr _states_considered;
         match leaf.state with
         | Added -> ()
         | New add ->
+            incr _dom_updates;
             leaf.state <- Added;
             add parent leaf.elt)
     | Concat concat ->
+        incr _states_considered;
         if not concat.synced then (
           update_childs concat.left;
           update_childs concat.right;
@@ -67,11 +82,14 @@ let positionned_childs ~remove childs parent =
   in
   let remove_dropped c () =
     match c with
-    | Leaf leaf -> remove parent leaf.elt
+    | Leaf leaf ->
+        incr _dom_updates;
+        remove parent leaf.elt
     | Concat _ -> assert false
   in
   let$ childs = Lwd_seq.bind childs Fun.id in
   let dropped, r = R.update_and_get_dropped !reducer childs in
   reducer := r;
   R.fold_dropped `Map remove_dropped dropped ();
-  Option.iter update_childs (R.reduce r)
+  Option.iter update_childs (R.reduce r);
+  _log_stats ()
