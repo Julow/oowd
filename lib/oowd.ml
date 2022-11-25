@@ -23,11 +23,6 @@ module R = Lwd_seq.Reducer
 
 type ('p, 'c) leaf_state =
   | Added
-  | Dropped
-      (** This state allow to avoid remove then add again when the document
-          updates. This state should never be used if the smart sharing in
-          [positionned_child] works. This depends on internal details of
-          [Lwd_seq.bind] and the reducer. *)
   | New of ('p -> 'c -> unit)
       (** The [add] function is lost as soon as the element is first added. *)
 
@@ -46,8 +41,9 @@ type ('p, 'c) positionned_child = ('p, 'c) synced_childs Lwd_seq.t Lwd.t
 let positionned_child ~add (ct, ce) =
   (* Depend on [ct] but also share the state to avoid remove then add.
      [Lwd_seq.lift] is implemented using [bind], wrap in [Lwd_seq.element] in
-     advance to optimise the document and allow the reducer to reuse old
-     values. *)
+     advance to optimise the document and allow the reducer to reuse old values.
+     This depends on internal details of [Lwd_seq.bind] and the reducer, which
+     uses [==] to reuse old values. *)
   let leaf = Lwd_seq.element (Leaf { state = New add; elt = ce }) in
   let$ () = ct in
   leaf
@@ -60,9 +56,6 @@ let positionned_childs ~remove childs parent =
     | Leaf leaf -> (
         match leaf.state with
         | Added -> ()
-        | Dropped ->
-            (* Was changed in the sequence, avoid remove then add. *)
-            leaf.state <- Added
         | New add ->
             leaf.state <- Added;
             add parent leaf.elt)
@@ -72,17 +65,13 @@ let positionned_childs ~remove childs parent =
           update_childs concat.right;
           concat.synced <- true (* Set last to resume after an exception. *))
   in
-  let set_dropped c () =
-    match c with Leaf leaf -> leaf.state <- Dropped | Concat _ -> assert false
-  in
   let remove_dropped c () =
     match c with
-    | Leaf leaf -> if leaf.state = Dropped then remove parent leaf.elt
+    | Leaf leaf -> remove parent leaf.elt
     | Concat _ -> assert false
   in
   let$ childs = Lwd_seq.bind childs Fun.id in
   let dropped, r = R.update_and_get_dropped !reducer childs in
   reducer := r;
-  R.fold_dropped `Map set_dropped dropped ();
-  Option.iter update_childs (R.reduce r);
-  R.fold_dropped `Map remove_dropped dropped ()
+  R.fold_dropped `Map remove_dropped dropped ();
+  Option.iter update_childs (R.reduce r)
