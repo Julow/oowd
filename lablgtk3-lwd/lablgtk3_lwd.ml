@@ -8,7 +8,8 @@ let connect f : < connect : 'a ; .. > attr =
 let button attrs = elt (GButton.button ()) attrs
 let toggle_button attrs = elt (GButton.toggle_button ()) attrs
 let label v = attr (fun e -> Lwd.map ~f:e#set_label v)
-
+let rows v = attr (fun e -> Lwd.map ~f:e#set_rows v)
+let columns v = attr (fun e -> Lwd.map ~f:e#set_columns v)
 let table attrs c = elt (GPack.table ()) (positionned_childs ~remove c :: attrs)
 
 let attach ~left ~top c =
@@ -47,3 +48,6 @@ let main window =
   @@ GMain.Idle.add (fun () ->
          ignore (Lwd.quick_sample root);
          true)
+
+let on_clicked f = app (fun w -> ignore @@ w#connect#clicked ~callback:f)
+let action_area_add c = join (fun c w -> w#action_area#add (c :> GObj.widget)) c

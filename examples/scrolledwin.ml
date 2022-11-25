@@ -8,25 +8,10 @@ let toggle_button on attrs =
   let relief =
     let$ on = Lwd.get on in
     if on then `NORMAL else `NONE
-  and on_click =
-    Oowd.app (fun btn ->
-        ignore
-        @@ btn#connect#clicked ~callback:(fun () -> on $= not (Lwd.peek on)))
-  in
-  G.button (on_click :: G.set_relief relief :: attrs)
+  and toggle () = on $= not (Lwd.peek on) in
+  G.button (G.on_clicked toggle :: G.set_relief relief :: attrs)
 
-let non_reactive_attach ~left ~top ?right ?bottom ?expand ?fill ?shrink
-    ?xpadding ?ypadding c =
-  Oowd.join
-    (fun c t ->
-      t#attach ~left ~top ?right ?bottom ?expand ?fill ?shrink ?xpadding
-        ?ypadding
-        (c :> GObj.widget))
-    c
-
-let non_reactive_table attrs = Oowd.elt (GPack.table ()) attrs
-
-let window () =
+let () =
   let table =
     List.init 10 (fun i ->
         List.init 10 (fun j ->
@@ -36,33 +21,14 @@ let window () =
               Printf.sprintf "button (%d,%d,%b)\n" i j on
             in
             let btn = toggle_button on [ G.label label ] in
-            non_reactive_attach ~left:i ~top:j ~expand:`BOTH btn))
-    |> List.flatten |> non_reactive_table
+            G.attach ~left:i ~top:j btn))
+    |> List.flatten |> Lwd_seq.of_list |> Lwd.return |> G.table []
   in
 
-  G.dialog
-    [
-      G.title (Lwd.pure "dialog");
-      G.border_width (Lwd.pure 10);
-      G.resize (Lwd.pure (300, 300));
-      Oowd.join
-        (fun c w -> w#action_area#add (c :> GObj.widget))
-        (G.button
-           [
-             G.label (Lwd.pure "close");
-             G.grab_default ();
-             G.connect (fun c -> c#clicked ~callback:GMain.quit);
-           ]);
-      G.connect (fun c -> c#destroy ~callback:GMain.quit);
-    ]
+  Example_lib.show_in_dialog
     (G.scrolled_window
        [
          G.border_width (Lwd.pure 10);
          G.hpolicy (Lwd.pure `AUTOMATIC);
          G.add_with_viewport table;
        ])
-
-let () =
-  ignore (GMain.init ());
-  G.main (window ());
-  GMain.main ()

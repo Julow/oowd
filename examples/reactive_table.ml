@@ -3,7 +3,7 @@ module G = Lablgtk3_lwd
 
 (* A table with a variable number of elements. *)
 
-let window () =
+let () =
   let data = Lwd_table.make () in
   let n_data = Lwd_table.map_reduce (fun _ _ -> 1) (0, ( + )) data in
 
@@ -16,13 +16,7 @@ let window () =
       in
       let btn =
         G.button
-          [
-            G.label label;
-            Oowd.app (fun btn ->
-                ignore
-                @@ btn#connect#clicked ~callback:(fun () ->
-                       Lwd_table.remove row));
-          ]
+          [ G.label label; G.on_clicked (fun () -> Lwd_table.remove row) ]
       in
       Printf.printf "mk_button %d\n%!" i;
       Lwd_seq.element (G.attach ~left ~top btn)
@@ -39,43 +33,17 @@ let window () =
     decr button_i
   in
 
-  G.dialog
-    [
-      G.title (Lwd.pure "dialog");
-      G.border_width (Lwd.pure 10);
-      G.resize (Lwd.pure (300, 300));
-      Oowd.join
-        (fun c w -> w#action_area#add (c :> GObj.widget))
-        (G.button
-           [
-             G.label (Lwd.pure "add");
-             G.connect (fun c -> c#clicked ~callback:add_button);
-           ]);
-      Oowd.join
-        (fun c w -> w#action_area#add (c :> GObj.widget))
-        (G.button
-           [
-             G.label (Lwd.pure "del");
-             G.connect (fun c -> c#clicked ~callback:remove_button);
-           ]);
-      Oowd.join
-        (fun c w -> w#action_area#add (c :> GObj.widget))
-        (G.button
-           [
-             G.label (Lwd.pure "close");
-             G.grab_default ();
-             G.connect (fun c -> c#clicked ~callback:GMain.quit);
-           ]);
-      G.connect (fun c -> c#destroy ~callback:GMain.quit);
-    ]
+  Example_lib.show_in_dialog
+    ~a:
+      [
+        G.action_area_add
+          (G.button [ G.label (Lwd.pure "add"); G.on_clicked add_button ]);
+        G.action_area_add
+          (G.button [ G.label (Lwd.pure "del"); G.on_clicked remove_button ]);
+      ]
     (G.scrolled_window
        [
          G.border_width (Lwd.pure 10);
          G.hpolicy (Lwd.pure `AUTOMATIC);
          G.add_with_viewport table;
        ])
-
-let () =
-  ignore (GMain.init ());
-  G.main (window ());
-  GMain.main ()
