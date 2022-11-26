@@ -7,8 +7,8 @@ val elt : 'a -> 'a attr list -> 'a elt
 val attr : ('a -> unit Lwd.t) -> 'a attr
 val join : ('a -> 'b -> unit) -> 'a elt -> 'b attr
 
-(** Apply attributes to any object. *)
 val apply_attrs : 'a -> 'a attr list -> unit Lwd.t
+(** Apply attributes to any object. *)
 
 type ('p, 'c) positionned_child
 

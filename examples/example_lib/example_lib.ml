@@ -1,29 +1,29 @@
 (** Library of helper function to make the examples shorter. *)
 
 open! Lwd_infix
-module G = Lablgtk3_lwd
-
-let () = ignore (GMain.init ())
+open Lablgtk3_lwd
 
 (** Create a dialog window and show it. Run Gtk's main loop. *)
 let show_in_dialog ?(a = []) elt =
   let dialog =
-    G.dialog
+    E.dialog
       (a
       @ [
-          G.title (Lwd.pure "dialog");
-          G.border_width (Lwd.pure 10);
-          G.resize (Lwd.pure (300, 300));
-          G.action_area_add
-            (G.button
-               [
-                 G.label (Lwd.pure "close");
-                 G.grab_default ();
-                 G.on_clicked GMain.quit;
-               ]);
-          G.connect (fun c -> c#destroy ~callback:GMain.quit);
+          A.title (Lwd.pure "dialog");
+          A.border_width (Lwd.pure 10);
+          A.resize (Lwd.pure (300, 300));
+          A.action_area
+            [
+              A.add
+                (E.button
+                   [
+                     A.label (Lwd.pure "close");
+                     A.grab_default ();
+                     A.on_clicked GMain.quit;
+                   ]);
+            ];
+          A.on_destroy GMain.quit;
         ])
       elt
   in
-  G.main dialog;
-  GMain.main ()
+  Gtk_lwd.main dialog

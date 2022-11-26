@@ -1,5 +1,5 @@
 open! Lwd_infix
-module G = Lablgtk3_lwd
+open Lablgtk3_lwd
 
 (* A table with a variable number of elements. *)
 
@@ -15,13 +15,13 @@ let () =
         Printf.sprintf "button %d/%d (%d,%d)\n" i n_data left top
       in
       let btn =
-        G.button
-          [ G.label label; G.on_clicked (fun () -> Lwd_table.remove row) ]
+        E.button
+          [ A.label label; A.on_clicked (fun () -> Lwd_table.remove row) ]
       in
       Printf.printf "mk_button %d\n%!" i;
-      Lwd_seq.element (G.attach ~left ~top btn)
+      Lwd_seq.element (A.table_attach ~left ~top btn)
     in
-    G.table [] @@ Lwd_table.map_reduce mk_button Lwd_seq.monoid data
+    E.table [] @@ Lwd_table.map_reduce mk_button Lwd_seq.monoid data
   in
 
   let button_i = ref 0 in
@@ -36,14 +36,18 @@ let () =
   Example_lib.show_in_dialog
     ~a:
       [
-        G.action_area_add
-          (G.button [ G.label (Lwd.pure "add"); G.on_clicked add_button ]);
-        G.action_area_add
-          (G.button [ G.label (Lwd.pure "del"); G.on_clicked remove_button ]);
+        A.action_area
+          [
+            A.add
+              (E.button [ A.label (Lwd.pure "add"); A.on_clicked add_button ]);
+            A.add
+              (E.button
+                 [ A.label (Lwd.pure "del"); A.on_clicked remove_button ]);
+          ];
       ]
-    (G.scrolled_window
+    (E.scrolled_window
        [
-         G.border_width (Lwd.pure 10);
-         G.hpolicy (Lwd.pure `AUTOMATIC);
-         G.add_with_viewport table;
+         A.border_width (Lwd.pure 10);
+         A.hpolicy (Lwd.pure `AUTOMATIC);
+         A.add table;
        ])
