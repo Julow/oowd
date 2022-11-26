@@ -9,10 +9,10 @@ let app f elt =
 
 let root (ct, ce) = Lwd.observe (Lwd.map ~f:(fun () -> ce) ct)
 
-let elt elm attrs =
-  ( Lwd_utils.pack ((), fun () () -> ()) (List.map (fun attr -> attr elm) attrs),
-    elm )
+let apply_attrs elm attrs =
+  Lwd_utils.pack ((), fun () () -> ()) (List.map (fun attr -> attr elm) attrs)
 
+let elt elm attrs = (apply_attrs elm attrs, elm)
 let attr f = f
 
 let join f (ct, ce) parent =
