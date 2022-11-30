@@ -115,10 +115,11 @@ end
 module Gtk_lwd = struct
   let main window =
     let root = Oowd.root window in
+    let resample () =
+      ignore (Lwd.quick_sample root);
+      false
+    in
+    Lwd.set_on_invalidate root (fun _ -> ignore (GMain.Idle.add resample));
     (Lwd.quick_sample root)#show ();
-    ignore
-    @@ GMain.Idle.add (fun () ->
-           ignore (Lwd.quick_sample root);
-           true);
     GMain.main ()
 end
