@@ -17,4 +17,5 @@ let join f (ct, ce) parent =
   f ce parent;
   ct
 
+include Ordered_childs
 include Positionned_childs

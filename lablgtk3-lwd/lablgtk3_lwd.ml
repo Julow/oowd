@@ -25,7 +25,7 @@ module A = struct
 
   (** General containers *)
 
-  let add c = join (fun c t -> t#add (c :> GObj.widget)) c
+  let add c = join (fun c t -> t#add (c#coerce : GObj.widget)) c
 
   (** Table *)
 
@@ -48,6 +48,17 @@ module A = struct
   let valign x = attr (fun e -> Lwd.map ~f:e#set_valign x)
   let col_spacings x = attr (fun elm -> Lwd.map ~f:elm#set_col_spacings x)
   let row_spacings x = attr (fun elm -> Lwd.map ~f:elm#set_row_spacings x)
+
+  (** Box *)
+
+  (** Place children into a box. *)
+  let box_childs =
+    let insert (box : < GPack.box ; .. >) index child =
+      let child = (child :> GObj.widget) in
+      box#add child;
+      box#reorder_child child ~pos:index
+    and remove box child = box#remove (child :> GObj.widget) in
+    fun childs -> ordered_childs ~insert ~remove childs
 
   (** Dialog *)
 
@@ -89,6 +100,8 @@ module E = struct
 
   let button attrs = elt (GButton.button ()) attrs
   let toggle_button attrs = elt (GButton.toggle_button ()) attrs
+  let vbox attrs = elt (GPack.vbox ()) attrs
+  let hbox attrs = elt (GPack.hbox ()) attrs
 
   let table attrs c =
     elt (GPack.table ()) (positionned_childs ~remove c :: attrs)

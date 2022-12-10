@@ -34,6 +34,23 @@ val root : 'a elt -> 'a Lwd.root
 
 (** {1:childs Container/child relations} *)
 
+(** {2:ordered_child Ordered children} *)
+
+val ordered_childs :
+  insert:('p -> int -> 'c -> unit) ->
+  remove:('p -> 'c -> unit) ->
+  'c elt Lwd_seq.t Lwd.t ->
+  'p attr
+(** Maintain a sequence of children using two functions:
+
+    - [insert parent index child] Inserts an element at a specific position. An
+      [index] of [0] means before the first element, an [index] equal to the
+      number of elements means at the end.
+    - [remove parent child] Removes an element from the parent.
+
+    Children are maintained in the same order as they appear in the sequence. A
+    moved children is first removed then inserted again. *)
+
 (** {2:positionned_child Self-positionned children} *)
 
 type ('p, 'c) positionned_child
